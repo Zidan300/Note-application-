@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "echo \"No tests specified\""
   },
   "keywords": [],
   "author": "",
@@ -13,6 +14,6 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongose": "^0.0.2-security"
+    "mongoose": "^8.0.0"
   }
 }
