@@ -1,0 +1,100 @@
+### Collaborative To-Do List API
+### Base URL: http://localhost:3000/api
+
+### CREATE - Valid Task
+POST http://localhost:3000/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Complete assignment",
+  "description": "Finish REST API project",
+  "isCompleted": false,
+  "dueDate": "2026-08-30T18:00:00.000Z"
+}
+
+### CREATE - Missing Title (expect 400)
+POST http://localhost:3000/api/tasks
+Content-Type: application/json
+
+{
+  "description": "No title provided"
+}
+
+### CREATE - Title Too Long (expect 400)
+POST http://localhost:3000/api/tasks
+Content-Type: application/json
+
+{
+  "title": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+}
+
+### CREATE - Empty Body (expect 400)
+POST http://localhost:3000/api/tasks
+Content-Type: application/json
+
+{}
+
+### GET All Tasks
+GET http://localhost:3000/api/tasks
+
+### GET Completed Tasks
+GET http://localhost:3000/api/tasks?completed=true
+
+### GET Incomplete Tasks
+GET http://localhost:3000/api/tasks?completed=false
+
+### GET Tasks - Invalid Completed Query (expect 400)
+GET http://localhost:3000/api/tasks?completed=invalid
+
+### GET Task By ID
+GET http://localhost:3000/api/tasks/6a82a5f901cf9e6af0f0059c
+
+### GET Task - Nonexistent (expect 404)
+GET http://localhost:3000/api/tasks/000000000000000000000000
+
+### GET Task - Invalid ID (expect 400)
+GET http://localhost:3000/api/tasks/notavalidid
+
+### UPDATE Task
+PUT http://localhost:3000/api/tasks/6a82a5f901cf9e6af0f0059c
+Content-Type: application/json
+
+{
+  "title": "Updated assignment",
+  "description": "Updated description",
+  "isCompleted": true,
+  "dueDate": "2026-09-15T12:00:00.000Z"
+}
+
+### UPDATE Task - Title Too Long (expect 400)
+PUT http://localhost:3000/api/tasks/6a82a5f901cf9e6af0f0059c
+Content-Type: application/json
+
+{
+  "title": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+}
+
+### UPDATE Task - Empty Title (expect 400)
+PUT http://localhost:3000/api/tasks/6a82a5f901cf9e6af0f0059c
+Content-Type: application/json
+
+{
+  "title": ""
+}
+
+### UPDATE Task - Not Found (expect 404)
+PUT http://localhost:3000/api/tasks/000000000000000000000000
+Content-Type: application/json
+
+{
+  "title": "Ghost task"
+}
+
+### DELETE Task
+DELETE http://localhost:3000/api/tasks/6a82a5f901cf9e6af0f005a2
+
+### DELETE Task - Not Found (expect 404)
+DELETE http://localhost:3000/api/tasks/000000000000000000000000
+
+### Unknown Route (expect 404)
+GET http://localhost:3000/api/unknown

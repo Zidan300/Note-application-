@@ -1,0 +1,185 @@
+const Task = require('../models/Task');
+const mongoose = require('mongoose');
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+exports.createTask = async (req, res, next) => {
+  try {
+    const { title, description, isCompleted, dueDate } = req.body;
+
+    const task = await Task.create({
+      title,
+      description,
+      isCompleted,
+      dueDate,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: task,
+    });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(', '),
+      });
+    }
+    next(error);
+  }
+};
+
+exports.getTasks = async (req, res, next) => {
+  try {
+    const { completed } = req.query;
+
+    const filter = {};
+
+    if (completed !== undefined) {
+      if (completed === 'true') {
+        filter.isCompleted = true;
+      } else if (completed === 'false') {
+        filter.isCompleted = false;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid value for "completed" query parameter. Use "true" or "false".',
+        });
+      }
+    }
+
+    const tasks = await Task.find(filter).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: tasks.length,
+      data: tasks,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getTaskById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid task ID format',
+      });
+    }
+
+    const task = await Task.findById(id);
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: task,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateTask = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid task ID format',
+      });
+    }
+
+    const { title, description, isCompleted, dueDate } = req.body;
+
+    if (title !== undefined && (typeof title !== 'string' || title.trim().length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title must be a non-empty string',
+      });
+    }
+
+    if (title !== undefined && title.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title cannot exceed 100 characters',
+      });
+    }
+
+    const updateData = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (isCompleted !== undefined) updateData.isCompleted = isCompleted;
+    if (dueDate !== undefined) updateData.dueDate = dueDate;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields provided for update',
+      });
+    }
+
+    const task = await Task.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: task,
+    });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(', '),
+      });
+    }
+    next(error);
+  }
+};
+
+exports.deleteTask = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid task ID format',
+      });
+    }
+
+    const task = await Task.findByIdAndDelete(id);
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found',
+      });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
