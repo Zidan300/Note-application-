@@ -16,7 +16,6 @@ This API provides a complete CRUD (Create, Read, Update, Delete) interface for m
 - Centralized error handling with consistent JSON responses
 - Mongoose schema validation with custom error messages
 - Automatic timestamps (createdAt, updatedAt)
-- CORS enabled for cross-origin requests
 
 ## Technology Stack
 
@@ -27,7 +26,6 @@ This API provides a complete CRUD (Create, Read, Update, Delete) interface for m
 | **MongoDB** | NoSQL document database |
 | **Mongoose** | ODM library for MongoDB schema and validation |
 | **dotenv** | Environment variable management |
-| **cors** | Cross-Origin Resource Sharing middleware |
 | **nodemon** | Auto-restart development server |
 
 ## Architecture
@@ -45,29 +43,23 @@ The project follows a modular MVC-inspired architecture:
 ```
 note-appliication/
 ├── .env                  # Environment variables (not committed)
-├── .env.example          # Example environment variables
 ├── .gitignore            # Git ignore rules
 ├── package.json          # Dependencies and scripts
-├── server.js             # Entry point - starts server
-├── api.http              # HTTP request examples
+├── index.js              # Entry point - starts server
+├── config/
+│   └── db.js             # MongoDB connection
+├── controllers/
+│   └── taskController.js # Business logic for tasks
+├── middleware/
+│   ├── errorHandler.js   # Global error handler
+│   └── notFound.js       # 404 middleware
+├── models/
+│   └── Task.js           # Mongoose schema
+├── routes/
+│   └── taskRoutes.js     # API route definitions
 ├── postman/
 │   └── Collaborative-Todo-API.postman_collection.json
-├── src/
-│   ├── app.js            # Express app configuration
-│   ├── config/
-│   │   └── db.js         # MongoDB connection
-│   ├── controllers/
-│   │   └── taskController.js  # Business logic
-│   ├── middleware/
-│   │   ├── errorHandler.js    # Global error handler
-│   │   └── notFound.js        # 404 middleware
-│   ├── models/
-│   │   └── Task.js        # Mongoose schema
-│   └── routes/
-│       └── taskRoutes.js  # API route definitions
-├── README.md
-├── DATABASE_SETUP.md
-└── REPORT_NOTES.md
+└── README.md
 ```
 
 ## Prerequisites
@@ -88,21 +80,25 @@ note-appliication/
    ```bash
    npm install
    ```
-4. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
-5. Edit `.env` if needed (see Environment Variables below)
+4. Create a `.env` file in the project root (see Environment Variables below)
 
 ## Environment Variables
 
+Create a `.env` file in the project root:
+
+```
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/todo_app
+NODE_ENV=development
+```
+
 | Variable | Default | Description |
 |---|---|---|
-| `PORT` | `5000` | Server listening port |
+| `PORT` | `3000` | Server listening port |
 | `MONGODB_URI` | `mongodb://127.0.0.1:27017/todo_app` | MongoDB connection string |
 | `NODE_ENV` | `development` | Environment mode |
 
-**Note:** On macOS, port 5000 may be occupied by AirPlay/ControlCenter. If so, change `PORT` to `3000` in your `.env` file.
+**Note:** The `.env` file is listed in `.gitignore` and will not be committed to Git.
 
 ## MongoDB Setup
 
@@ -128,8 +124,6 @@ note-appliication/
 2. Create a cluster and get your connection string
 3. Set `MONGODB_URI` in your `.env` file to the Atlas connection string
 
-See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed instructions.
-
 ## Running the Server
 
 ### Development mode (auto-restart on changes):
@@ -144,7 +138,7 @@ npm start
 
 ### Successful startup messages:
 ```
-MongoDB connected successfully: 127.0.0.1
+MongoDB connected successfully
 Server running on port 3000
 ```
 
@@ -304,7 +298,7 @@ Error types handled:
 - Invalid ObjectId / CastError (400)
 - Nonexistent resources (404)
 - Unknown routes (404)
-- Unexpected server errors (500) — no stack traces exposed
+- Unexpected server errors (500) - no stack traces exposed
 
 ## Postman Testing
 
@@ -313,7 +307,7 @@ Error types handled:
 1. Open Postman
 2. Click **Import** (top left)
 3. Select `postman/Collaborative-Todo-API.postman_collection.json`
-4. The collection includes 14 requests covering all endpoints and error cases
+4. The collection includes requests covering all endpoints and error cases
 
 ### Collection Variables
 
@@ -324,7 +318,7 @@ Error types handled:
 
 ### Run in Order
 
-1. Run **Create Task** first (sets `taskId` variable)
+1. Run **Create Task** first (sets `taskId` variable automatically)
 2. Run other requests in any order
 3. Run **Delete Task** last
 

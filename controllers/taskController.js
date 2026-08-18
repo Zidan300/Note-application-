@@ -101,20 +101,40 @@ exports.updateTask = async (req, res, next) => {
       });
     }
 
-    const { title, description, isCompleted, dueDate } = req.body;
+    const body = req.body;
 
-    if (title !== undefined && (typeof title !== 'string' || title.trim().length === 0)) {
+    if (!body || Object.keys(body).length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Title must be a non-empty string',
+        message: 'Request body cannot be empty',
       });
     }
 
-    if (title !== undefined && title.length > 100) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title cannot exceed 100 characters',
-      });
+    const { title, description, isCompleted, dueDate } = body;
+
+    if (title !== undefined) {
+      if (typeof title !== 'string' || title.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Title must be a non-empty string',
+        });
+      }
+      if (title.length > 100) {
+        return res.status(400).json({
+          success: false,
+          message: 'Title cannot exceed 100 characters',
+        });
+      }
+    }
+
+    if (dueDate !== undefined && dueDate !== null) {
+      const parsed = new Date(dueDate);
+      if (isNaN(parsed.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid dueDate value',
+        });
+      }
     }
 
     const updateData = {};

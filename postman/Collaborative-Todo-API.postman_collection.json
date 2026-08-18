@@ -26,7 +26,7 @@
               "pm.test('Response has success true', () => { pm.expect(pm.response.json().success).to.be.true; });",
               "pm.test('Response has _id', () => { pm.expect(pm.response.json().data).to.have.property('_id'); });",
               "pm.test('Response has createdAt and updatedAt', () => { const d = pm.response.json().data; pm.expect(d).to.have.property('createdAt'); pm.expect(d).to.have.property('updatedAt'); });",
-              "pm.environment.set('taskId', pm.response.json().data._id);"
+              "pm.collectionVariables.set('taskId', pm.response.json().data._id);"
             ]
           }
         }
@@ -198,6 +198,35 @@
       }
     },
     {
+      "name": "Get Invalid Completed Query",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 400', () => { pm.response.to.have.status(400); });",
+              "pm.test('Response has success false', () => { pm.expect(pm.response.json().success).to.be.false; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tasks?completed=invalid",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks"],
+          "query": [
+            {
+              "key": "completed",
+              "value": "invalid"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "Get Task By ID",
       "event": [
         {
@@ -217,6 +246,29 @@
           "raw": "{{baseUrl}}/tasks/{{taskId}}",
           "host": ["{{baseUrl}}"],
           "path": ["tasks", "{{taskId}}"]
+        }
+      }
+    },
+    {
+      "name": "Get Task - Invalid ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 400', () => { pm.response.to.have.status(400); });",
+              "pm.test('Response has success false', () => { pm.expect(pm.response.json().success).to.be.false; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tasks/notavalidid",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "notavalidid"]
         }
       }
     },
@@ -241,29 +293,6 @@
           "raw": "{{baseUrl}}/tasks/000000000000000000000000",
           "host": ["{{baseUrl}}"],
           "path": ["tasks", "000000000000000000000000"]
-        }
-      }
-    },
-    {
-      "name": "Get Task - Invalid ID",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 400', () => { pm.response.to.have.status(400); });",
-              "pm.test('Response has success false', () => { pm.expect(pm.response.json().success).to.be.false; });"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/tasks/notavalidid",
-          "host": ["{{baseUrl}}"],
-          "path": ["tasks", "notavalidid"]
         }
       }
     },
@@ -300,7 +329,39 @@
       }
     },
     {
-      "name": "Update Task - Invalid Data",
+      "name": "Update Task - Empty Body",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 400', () => { pm.response.to.have.status(400); });",
+              "pm.test('Response has success false', () => { pm.expect(pm.response.json().success).to.be.false; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tasks/{{taskId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["tasks", "{{taskId}}"]
+        }
+      }
+    },
+    {
+      "name": "Update Task - Title Too Long",
       "event": [
         {
           "listen": "test",
