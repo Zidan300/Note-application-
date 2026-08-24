@@ -1,33 +1,6 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 
-const API_BASE = 'http://localhost:3000/api/tasks';
-
-const api = axios.create({
-  baseURL: API_BASE,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-export const fetchTasks = async (completed) => {
-  const params = completed !== undefined ? { completed } : {};
-  const { data } = await api.get('/', { params });
-  return data;
-};
-
-export const fetchTaskById = async (id) => {
-  const { data } = await api.get(`/${id}`);
-  return data;
-};
-
-export const createTask = async (task) => {
-  const { data } = await api.post('/', task);
-  return data;
-};
-
-export const updateTask = async (id, updates) => {
-  const { data } = await api.put(`/${id}`, updates);
-  return data;
-};
-
-export const deleteTask = async (id) => {
-  await api.delete(`/${id}`);
-};
+export const fetchTasks = async (completed) => (await apiClient.get('/tasks', { params: completed === undefined ? {} : { completed } })).data;
+export const createTask = async (task) => (await apiClient.post('/tasks', task)).data;
+export const updateTask = async (id, updates) => (await apiClient.put(`/tasks/${id}`, updates)).data;
+export const deleteTask = async (id) => (await apiClient.delete(`/tasks/${id}`)).data;

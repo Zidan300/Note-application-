@@ -95,6 +95,17 @@ html, body, #root {
 body {
   background: var(--bg-secondary);
 }
+.auth-page { min-height: 100vh; display: grid; place-items: center; background: #f5f3ef; padding: 24px; }
+.auth-card { width: min(100%, 420px); display: grid; gap: 14px; padding: 36px; background: white; border: 1px solid #e8e2d8; border-radius: 16px; box-shadow: 0 12px 35px rgba(54, 45, 35, .08); }
+.auth-card h1 { margin: 0; color: #2b2926; font-size: 28px; }
+.auth-card p { margin: 0 0 10px; color: #756f67; }
+.auth-card input { border: 1px solid #d9d2c8; border-radius: 8px; padding: 12px; font: inherit; }
+.auth-card > button { border: 0; border-radius: 8px; padding: 12px; background: #4d6655; color: white; font: inherit; cursor: pointer; }
+.auth-card button:disabled { opacity: .6; cursor: wait; }
+.auth-error, .app-error { color: #9d3028; background: #fff0ee; border: 1px solid #e4b5ae; border-radius: 8px; padding: 10px; }
+.auth-footer { color: #756f67; font-size: 14px; text-align: center; }
+.auth-footer button { border: 0; background: transparent; color: #4d6655; cursor: pointer; font: inherit; text-decoration: underline; }
+.app-error { position: fixed; z-index: 5; top: 16px; right: 16px; max-width: 360px; }
 
 button {
   border: none;

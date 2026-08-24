@@ -1,338 +1,49 @@
-# Collaborative To-Do List REST API
+# SecureStay
 
-A RESTful API for managing tasks, built with Node.js, Express.js, MongoDB, and Mongoose as part of a university assignment.
-
-## Project Overview
-
-This API provides a complete CRUD (Create, Read, Update, Delete) interface for managing to-do tasks. It supports task creation with validation, filtering by completion status, full update operations, and deletion with proper error handling throughout.
-
-## Features
-
-- Create tasks with title, description, completion status, and due date
-- Retrieve all tasks or filter by completion status
-- Retrieve individual tasks by their unique MongoDB ObjectId
-- Update existing tasks with full validation
-- Delete tasks with confirmation
-- Centralized error handling with consistent JSON responses
-- Mongoose schema validation with custom error messages
-- Automatic timestamps (createdAt, updatedAt)
-
-## Technology Stack
-
-| Technology | Purpose |
-|---|---|
-| **Node.js** | JavaScript runtime environment |
-| **Express.js** | Web framework for routing and middleware |
-| **MongoDB** | NoSQL document database |
-| **Mongoose** | ODM library for MongoDB schema and validation |
-| **dotenv** | Environment variable management |
-| **nodemon** | Auto-restart development server |
-
-## Architecture
-
-The project follows a modular MVC-inspired architecture:
-
-- **Models** define the data schema and validation rules
-- **Controllers** contain the business logic for each operation
-- **Routes** map HTTP methods and paths to controller functions
-- **Middleware** handles errors and unknown routes
-- **Config** manages database connection
-
-## Project Structure
-
-```
-note-appliication/
-├── .env                  # Environment variables (not committed)
-├── .gitignore            # Git ignore rules
-├── package.json          # Dependencies and scripts
-├── index.js              # Entry point - starts server
-├── config/
-│   └── db.js             # MongoDB connection
-├── controllers/
-│   └── taskController.js # Business logic for tasks
-├── middleware/
-│   ├── errorHandler.js   # Global error handler
-│   └── notFound.js       # 404 middleware
-├── models/
-│   └── Task.js           # Mongoose schema
-├── routes/
-│   └── taskRoutes.js     # API route definitions
-├── postman/
-│   └── Collaborative-Todo-API.postman_collection.json
-└── README.md
-```
+SecureStay is a React notes/tasks portal backed by an Express REST API, MongoDB, Mongoose, and JWT authentication. Tasks are private to the authenticated account and all changes persist to MongoDB.
 
 ## Prerequisites
 
-- **Node.js** v18 or higher
-- **MongoDB** v6 or higher (local installation or MongoDB Atlas)
-- **npm** (comes with Node.js)
-- Optionally: **Postman** for API testing
+- Node.js 18+
+- MongoDB 6+ locally or a MongoDB Atlas URI
+- npm
 
-## Installation
+## Setup
 
-1. Clone or download the project files
-2. Navigate to the project directory:
-   ```bash
-   cd note-appliication
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Create a `.env` file in the project root (see Environment Variables below)
+1. Copy `.env.example` to `.env` and set a long random `JWT_SECRET` and a working `MONGODB_URI`.
+2. Install backend dependencies from the repository root: `npm install`.
+3. Install frontend dependencies: `cd Note-UI && npm install`.
+4. Optionally create `Note-UI/.env` with `VITE_API_BASE_URL=http://localhost:3000/api` (this is the default).
 
-## Environment Variables
+Never commit `.env`, credentials, or production secrets.
 
-Create a `.env` file in the project root:
+## Run
 
-```
-PORT=3000
-MONGODB_URI=mongodb://127.0.0.1:27017/todo_app
-NODE_ENV=development
-```
+Start MongoDB, then in separate terminals:
 
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `3000` | Server listening port |
-| `MONGODB_URI` | `mongodb://127.0.0.1:27017/todo_app` | MongoDB connection string |
-| `NODE_ENV` | `development` | Environment mode |
-
-**Note:** The `.env` file is listed in `.gitignore` and will not be committed to Git.
-
-## MongoDB Setup
-
-### Local Installation
-
-1. Install MongoDB Community Edition from [mongodb.com](https://www.mongodb.com/try/download/community)
-2. Start the MongoDB service:
-   ```bash
-   # macOS with Homebrew
-   brew services start mongodb-community
-
-   # Linux
-   sudo systemctl start mongod
-   ```
-3. Verify MongoDB is running:
-   ```bash
-   mongosh --eval "db.runCommand({ping:1})"
-   ```
-
-### MongoDB Atlas (Cloud Alternative)
-
-1. Create a free account at [mongodb.com/atlas](https://www.mongodb.com/atlas)
-2. Create a cluster and get your connection string
-3. Set `MONGODB_URI` in your `.env` file to the Atlas connection string
-
-## Running the Server
-
-### Development mode (auto-restart on changes):
 ```bash
-npm run dev
+npm run dev                 # backend on http://localhost:3000
+cd Note-UI && npm run dev   # frontend on http://localhost:5173
 ```
 
-### Production mode:
-```bash
-npm start
-```
+The frontend also supports `npm run lint` and `npm run build`.
 
-### Successful startup messages:
-```
-MongoDB connected successfully
-Server running on port 3000
-```
+## Authentication and API
 
-## API Endpoints
+Authentication uses `Authorization: Bearer <jwt>`. Signup and login return a token and public user details. Every task endpoint independently verifies the token and scopes queries to its owner.
 
-| Method | Endpoint | Description | Status Codes |
+| Method | Endpoint | Auth | Purpose |
 |---|---|---|---|
-| `POST` | `/api/tasks` | Create a new task | 201, 400 |
-| `GET` | `/api/tasks` | Get all tasks | 200 |
-| `GET` | `/api/tasks?completed=true` | Get completed tasks | 200 |
-| `GET` | `/api/tasks?completed=false` | Get incomplete tasks | 200 |
-| `GET` | `/api/tasks/:id` | Get task by ID | 200, 400, 404 |
-| `PUT` | `/api/tasks/:id` | Update a task | 200, 400, 404 |
-| `DELETE` | `/api/tasks/:id` | Delete a task | 204, 400, 404 |
+| POST | `/api/auth/signup` | No | Create an account |
+| POST | `/api/auth/login` | No | Authenticate |
+| GET | `/api/tasks` | Yes | List tasks; optional `?completed=true/false` |
+| POST | `/api/tasks` | Yes | Create a task |
+| GET | `/api/tasks/:id` | Yes | Read one owned task |
+| PUT | `/api/tasks/:id` | Yes | Update title, description, due date, or `isCompleted` |
+| DELETE | `/api/tasks/:id` | Yes | Delete one owned task |
 
-## Request Examples
+Successful task creation returns `201`, updates return `200`, and deletion returns `204`. Invalid input returns `400`; invalid/missing authentication returns `401`; missing owned resources return `404`.
 
-### Create a Task
-```bash
-curl -X POST http://localhost:3000/api/tasks \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Complete assignment",
-    "description": "Finish REST API project",
-    "isCompleted": false,
-    "dueDate": "2026-08-30T18:00:00.000Z"
-  }'
-```
+## Security notes
 
-### Get All Tasks
-```bash
-curl http://localhost:3000/api/tasks
-```
-
-### Get Completed Tasks
-```bash
-curl "http://localhost:3000/api/tasks?completed=true"
-```
-
-### Get Task by ID
-```bash
-curl http://localhost:3000/api/tasks/64f1a2b3c4d5e6f7a8b9c0d1
-```
-
-### Update a Task
-```bash
-curl -X PUT http://localhost:3000/api/tasks/64f1a2b3c4d5e6f7a8b9c0d1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Updated title",
-    "isCompleted": true
-  }'
-```
-
-### Delete a Task
-```bash
-curl -X DELETE http://localhost:3000/api/tasks/64f1a2b3c4d5e6f7a8b9c0d1
-```
-
-## Response Examples
-
-### Successful Creation (201)
-```json
-{
-  "success": true,
-  "data": {
-    "title": "Complete assignment",
-    "description": "Finish REST API project",
-    "isCompleted": false,
-    "dueDate": "2026-08-30T18:00:00.000Z",
-    "_id": "64f1a2b3c4d5e6f7a8b9c0d1",
-    "createdAt": "2026-08-17T10:00:00.000Z",
-    "updatedAt": "2026-08-17T10:00:00.000Z",
-    "__v": 0
-  }
-}
-```
-
-### Get All Tasks (200)
-```json
-{
-  "success": true,
-  "count": 3,
-  "data": [
-    {
-      "_id": "...",
-      "title": "Task 1",
-      "description": "...",
-      "isCompleted": false,
-      "dueDate": null,
-      "createdAt": "...",
-      "updatedAt": "...",
-      "__v": 0
-    }
-  ]
-}
-```
-
-### Validation Error (400)
-```json
-{
-  "success": false,
-  "message": "Title is required"
-}
-```
-
-### Task Not Found (404)
-```json
-{
-  "success": false,
-  "message": "Task not found"
-}
-```
-
-### Internal Server Error (500)
-```json
-{
-  "success": false,
-  "message": "Internal server error"
-}
-```
-
-## HTTP Status Codes
-
-| Code | Meaning | When Used |
-|---|---|---|
-| `200` | OK | Successful GET or PUT |
-| `201` | Created | Successful POST |
-| `204` | No Content | Successful DELETE |
-| `400` | Bad Request | Validation error, invalid ID |
-| `404` | Not Found | Task not found, unknown route |
-| `500` | Internal Server Error | Unexpected server errors |
-
-## Validation
-
-- **title**: Required, trimmed, maximum 100 characters
-- **description**: Optional, trimmed
-- **isCompleted**: Boolean, defaults to `false`
-- **dueDate**: Date, optional
-- **completed query**: Must be `"true"` or `"false"` (case-sensitive)
-- **ObjectId params**: Must be valid 24-character hex string
-- **Empty updates**: Rejected with 400 error
-
-## Error Handling
-
-All errors return a consistent JSON structure:
-
-```json
-{
-  "success": false,
-  "message": "Human-readable error description"
-}
-```
-
-Error types handled:
-- Mongoose validation errors (400)
-- Invalid ObjectId / CastError (400)
-- Nonexistent resources (404)
-- Unknown routes (404)
-- Unexpected server errors (500) - no stack traces exposed
-
-## Postman Testing
-
-### Import the Collection
-
-1. Open Postman
-2. Click **Import** (top left)
-3. Select `postman/Collaborative-Todo-API.postman_collection.json`
-4. The collection includes requests covering all endpoints and error cases
-
-### Collection Variables
-
-| Variable | Description |
-|---|---|
-| `baseUrl` | Set to `http://localhost:3000/api` |
-| `taskId` | Auto-set when running "Create Task" |
-
-### Run in Order
-
-1. Run **Create Task** first (sets `taskId` variable automatically)
-2. Run other requests in any order
-3. Run **Delete Task** last
-
-Each request includes test assertions for expected status codes and response structure.
-
-## Database Persistence
-
-All tasks are stored in MongoDB and persist across server restarts. Verified by:
-
-- Creating tasks via API and confirming they appear in direct MongoDB queries
-- Updating tasks via API and confirming changes in MongoDB
-- Deleting tasks via API and confirming removal from MongoDB
-- Timestamps (`createdAt`, `updatedAt`) are automatically managed by Mongoose
-
-## License
-
-ISC
+Passwords are stored as bcrypt hashes, JWT secrets are environment-only, task routes are backend-protected, client input is validated on both sides, and the UI renders note content as text rather than unsafe HTML. The frontend route guard is only a usability layer; the API remains the security boundary.

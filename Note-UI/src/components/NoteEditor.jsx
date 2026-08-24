@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-export default function NoteEditor({ task, onSave, onBack, onDelete, onToggleComplete }) {
+export default function NoteEditor({ task, onSave, onBack, onDelete, onToggleComplete, busy }) {
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
   const [isCompleted, setIsCompleted] = useState(task?.isCompleted || false);
@@ -33,6 +33,8 @@ export default function NoteEditor({ task, onSave, onBack, onDelete, onToggleCom
         dueDate: dueDate || null,
       });
       setDirty(false);
+    } catch {
+      // The hook surfaces the server error and keeps the prior task state.
     } finally {
       setSaving(false);
     }
@@ -71,9 +73,8 @@ export default function NoteEditor({ task, onSave, onBack, onDelete, onToggleCom
   };
 
   const handleToggleComplete = async () => {
-    const newVal = !isCompleted;
-    setIsCompleted(newVal);
-    await onToggleComplete(task._id);
+    const updated = await onToggleComplete(task._id);
+    if (updated) setIsCompleted(updated.isCompleted);
   };
 
   if (!task) {
@@ -102,6 +103,7 @@ export default function NoteEditor({ task, onSave, onBack, onDelete, onToggleCom
           <button
             className={`editor__btn ${isCompleted ? 'editor__btn--active' : ''}`}
             onClick={handleToggleComplete}
+            disabled={busy}
             title={isCompleted ? 'Mark as active' : 'Mark as completed'}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

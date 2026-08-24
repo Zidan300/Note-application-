@@ -3,12 +3,18 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const taskRoutes = require('./routes/taskRoutes');
+const authRoutes = require('./routes/authRoutes');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
 app.use(express.json());
+app.use(require('cors')({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173' }));
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is required');
+}
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -19,6 +25,7 @@ mongoose
   });
 
 app.use('/api/tasks', taskRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

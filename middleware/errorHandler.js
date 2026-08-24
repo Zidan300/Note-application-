@@ -1,6 +1,10 @@
 const errorHandler = (err, req, res, next) => {
   console.error(err.stack);
 
+  if (err instanceof SyntaxError && err.status === 400 && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ success: false, message: 'Malformed JSON request body' });
+  }
+
   if (err.name === 'CastError') {
     return res.status(400).json({
       success: false,

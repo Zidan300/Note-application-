@@ -4,7 +4,7 @@ const filters = [
   { key: 'completed', label: 'Completed' },
 ];
 
-export default function Sidebar({ filter, onFilterChange, taskCount, mobileOpen, onClose }) {
+export default function Sidebar({ filter, onFilterChange, taskCount, mobileOpen, onClose, onLogout }) {
   return (
     <>
       {mobileOpen && <div className="sidebar-overlay" onClick={onClose} />}
@@ -57,6 +57,7 @@ export default function Sidebar({ filter, onFilterChange, taskCount, mobileOpen,
         </nav>
 
         <div className="sidebar__footer">
+          <button className="sidebar__logout" onClick={onLogout}>Log out</button>
           <div className="sidebar__version">Note App</div>
         </div>
       </aside>

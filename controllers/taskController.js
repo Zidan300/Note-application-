@@ -8,6 +8,7 @@ exports.createTask = async (req, res, next) => {
     const { title, description, isCompleted, dueDate } = req.body;
 
     const task = await Task.create({
+      owner: req.user.sub,
       title,
       description,
       isCompleted,
@@ -49,7 +50,7 @@ exports.getTasks = async (req, res, next) => {
       }
     }
 
-    const tasks = await Task.find(filter).sort({ createdAt: -1 });
+    const tasks = await Task.find({ ...filter, owner: req.user.sub }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -72,7 +73,7 @@ exports.getTaskById = async (req, res, next) => {
       });
     }
 
-    const task = await Task.findById(id);
+    const task = await Task.findOne({ _id: id, owner: req.user.sub });
 
     if (!task) {
       return res.status(404).json({
@@ -150,7 +151,8 @@ exports.updateTask = async (req, res, next) => {
       });
     }
 
-    const task = await Task.findByIdAndUpdate(id, updateData, {
+    if (isCompleted !== undefined && typeof isCompleted !== 'boolean') return res.status(400).json({ success: false, message: 'isCompleted must be a boolean' });
+    const task = await Task.findOneAndUpdate({ _id: id, owner: req.user.sub }, updateData, {
       new: true,
       runValidators: true,
     });
@@ -189,7 +191,7 @@ exports.deleteTask = async (req, res, next) => {
       });
     }
 
-    const task = await Task.findByIdAndDelete(id);
+    const task = await Task.findOneAndDelete({ _id: id, owner: req.user.sub });
 
     if (!task) {
       return res.status(404).json({
